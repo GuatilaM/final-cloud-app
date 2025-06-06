@@ -29,6 +29,11 @@ DEBUG = True
 # <HINT> add your cloud host here
 ALLOWED_HOSTS = []
 
+CSRF_TRUSTED_ORIGINS=[
+    'https://*.127.0.0.1',
+    'https://guatilam-8000.theiadockernext-1-labs-prod-theiak8s-4-tor01.proxy.cognitiveclass.ai'
+]
+
 
 # Application definition
 INSTALLED_APPS = [
