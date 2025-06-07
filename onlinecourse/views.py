@@ -40,9 +40,10 @@ def show_exam_result(request, course_id, submission_id):
     course = Course.objects.get(id=course_id)
     submission = Submission.objects.get(id=submission_id)
     choices = submission.choices.all()
+    context['choices'] = []
     score = 0 
     for choice in choices:
-        context['choice'] = choice
+        context['choices'].append(choice.id)
         if not choice.is_correct:
             continue
         score += choice.question.grade
