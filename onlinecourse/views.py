@@ -1,7 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
-# <HINT> Import any new Models here
-from .models import Course, Enrollment
+from .models import Course, Enrollment, Question, Choice, Submission
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
 from django.urls import reverse
@@ -12,6 +11,44 @@ import logging
 logger = logging.getLogger(__name__)
 # Create your views here.
 
+def get_answers(request):
+    answers = []
+    for key, value in request.POST.items():
+        if 'choice' in key:
+            answers.append(int(value))
+    return answers
+
+def submit(request, course_id):
+    context = {}
+    if request.method == 'POST':
+        user = request.user
+        course = Course.objects.get(id=course_id)
+        enrollment = Enrollment.objects.get(user=user, course=course)
+        answers = get_answers(request)
+        submission = Submission.objects.create(enrollment=enrollment)
+        for choice_id in answers:
+            choice = Choice.objects.get(id=choice_id)
+            submission.choices.add(choice)
+        return redirect(
+            'onlinecourse:show_exam_result', 
+            course_id=course_id, 
+            submission_id=submission.id
+        )
+
+def show_exam_result(request, course_id, submission_id):
+    context = {}
+    course = Course.objects.get(id=course_id)
+    submission = Submission.objects.get(id=submission_id)
+    choices = submission.choices.all()
+    score = 0 
+    for choice in choices:
+        context['choice'] = choice
+        if not choice.is_correct:
+            continue
+        score += choice.question.grade
+    context['course'] = course
+    context['grade'] = score
+    return render(request, 'onlinecourse/exam_result_bootstrap.html', context)
 
 def registration_request(request):
     context = {}
